@@ -1,7 +1,0 @@
-{
-  "session_id": "shared-session-456",
-  "cwd": "/PROJECT_PATH",
-  "model": "claude-sonnet",
-  "version": "2.1.181",
-  "transcript_path": "/PRIVATE/TRANSCRIPT.jsonl"
-}

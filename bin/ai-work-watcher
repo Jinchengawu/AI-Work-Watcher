@@ -1,0 +1,4 @@
+#!/usr/bin/env python3
+from ai_work_watcher.cli import main
+
+raise SystemExit(main())
