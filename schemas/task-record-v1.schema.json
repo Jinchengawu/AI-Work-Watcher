@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"TaskRecord v1","type":"object","required":["schema_version","record_type","task_id","project_id","timestamp"],"properties":{"schema_version":{"const":1},"record_type":{"enum":["prepared","finished"]},"task_id":{"type":"string"},"project_id":{"type":"string"},"timestamp":{"type":"string","format":"date-time"}}}

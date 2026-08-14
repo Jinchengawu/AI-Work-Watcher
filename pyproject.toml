@@ -3,9 +3,9 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "water-supervisor"
-version = "0.1.0"
-description = "Local-first, model-neutral workflow supervision for Codex and Claude Code"
+name = "ai-work-watcher"
+version = "0.2.0a1"
+description = "Local-first AI workflow coach and prompt management for personal developers"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.9"
@@ -27,7 +27,10 @@ Homepage = "https://github.com/Jinchengawu/AI-Work-Watcher"
 Issues = "https://github.com/Jinchengawu/AI-Work-Watcher/issues"
 
 [project.scripts]
-waterctl = "waterctl.cli:main"
+ai-work-watcher = "ai_work_watcher.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["waterctl*"]
+include = ["ai_work_watcher*"]
+
+[tool.setuptools.package-data]
+ai_work_watcher = ["skill/SKILL.md", "skill/agents/openai.yaml"]

@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"ImprovementProposal v1","type":"object","required":["id","project_id","target_asset","specific_change","evidence_ids","expected_effect","validation_metric","rollback_condition","status"]}

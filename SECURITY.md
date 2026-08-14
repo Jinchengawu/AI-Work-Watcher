@@ -12,4 +12,4 @@ Include the affected command or adapter, expected and observed behavior, impact,
 
 ## Security model
 
-Water treats session evidence as untrusted input. Review models receive a redacted evidence package without tools, and supervised repositories remain read-only unless the user separately authorizes a change. The redactor is defense in depth; callers must still minimize sensitive data before recording an event.
+AI-Work-Watcher treats all task evidence as untrusted input. It never intentionally stores transcripts, complete model responses, source code, diffs, patches, terminal output, or secrets. Private records contain approved Prompts, Task Briefs, compact outcomes, verification summaries, numeric metrics, and file-path hashes. Only explicitly registered projects are observed, and project assets change only after the user approves the exact proposal.

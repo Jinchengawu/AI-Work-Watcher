@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"StructureSnapshot v1","type":"object","required":["schema_version","project_id","entries","drift"],"properties":{"schema_version":{"const":1},"entries":{"type":"array","items":{"type":"object","required":["path","kind","sha256"]}},"drift":{"type":"object","required":["added","removed","changed"]}}}

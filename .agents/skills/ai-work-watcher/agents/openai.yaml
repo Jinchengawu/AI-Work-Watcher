@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI-Work-Watcher"
+  short_description: "Coach and improve personal AI development workflows"
+  default_prompt: "Use $ai-work-watcher to prepare this task, then finish it with structured evidence."

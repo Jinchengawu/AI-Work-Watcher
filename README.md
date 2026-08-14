@@ -1,117 +1,127 @@
-# AI Work Watcher — Water Supervisor
+# AI-Work-Watcher
 
-AI Work Watcher is a local-first, model-neutral workflow supervisor for Codex and Claude Code. Its built-in agent, **Water Supervisor**, records compact and redacted development evidence, produces weekly balanced-scorecard reviews, and tracks improvements through human approval and verification.
+**Turn each AI coding request into a clearer Prompt, a verifiable workflow, and a reusable improvement.**
 
-Water is deliberately read-only toward supervised repositories. It can suggest a prompt, process, or configuration change, but it never applies that change without separate authorization.
+[简体中文](README.zh-CN.md)
 
-## What it does
+> **Alpha · 0.2.0a1.** Built for individual developers using Codex CLI or Claude Code. Interfaces and local data formats may change before a stable release.
+
+AI-Work-Watcher is a local-first AI workflow coach and Prompt management system. Before a task, its Agent Skill studies your request and project context, then drafts a Task Brief and refined Prompt for approval. After the task, it records compact evidence about outcomes, verification, rework, and result-adjusted efficiency. Over time, it can propose versioned Prompt, workflow, and project-context improvements—without storing transcripts or silently editing your repository.
 
 ```text
-Codex / Claude Code
-        ↓
-Session summary → validation → redaction → local JSONL ledger
-        ↓
-Weekly evidence package → Codex or Claude reviewer
-        ↓
-Recommendation → human decision → experiment → verified guidance
+Prepare             Execute              Finish               Improve
+request + context → approved brief → work in Codex/Claude → evidence → reusable asset
 ```
 
-- Supervises only explicitly registered projects.
-- Shares one portable Skill between Codex and Claude Code.
-- Stores summaries rather than prompts, transcripts, source code, or patches.
-- Uses independent scores for correctness, verification, flow, rework, cost, and safety.
-- Falls back from Codex to Claude when `--provider auto` is selected.
-- Promotes global guidance only after three successful verifications.
+## Why it exists
 
-## Requirements
+AI coding often becomes inefficient for reasons that raw token counts cannot explain: vague goals, missing acceptance criteria, stale project instructions, weak verification, and repeated Prompt repairs. AI-Work-Watcher makes those workflow decisions visible and improvable. Cost remains an optional efficiency signal, and only after the requested outcome and quality bar are met.
 
-- macOS (the v0.1 scheduler uses LaunchAgents)
-- Python 3.9 or newer
-- Codex CLI and/or Claude Code
-- `launchctl` for the weekly schedule
+## What works in this Alpha
 
-## Quick start
+- Prepare an approval-ready Task Brief with goal, context, constraints, acceptance criteria, unknowns, recommended workflow, and refined Prompt.
+- Record structured Finish evidence without complete responses, transcripts, source code, diffs, patches, or terminal output.
+- Track five independent dimensions—task definition, context structure, Prompt effectiveness, execution and verification, and result-adjusted efficiency—with evidence IDs and no total score.
+- Capture key project paths, types, and hashes to detect context drift while excluding common secrets, dependency trees, and generated output.
+- Promote successful Prompts and workflows into immutable project revisions under `.ai-work-watcher/`.
+- Gate trends behind three completed tasks and explicit current-session confirmation.
+- Install the same Skill and low-confidence SessionEnd fallback for Codex CLI and Claude Code.
+- Archive legacy v0 data without translating its old scores into the new model.
+
+## Install
+
+Requirements: macOS, Python 3.9–3.13, and at least one of Codex CLI or Claude Code.
 
 ```bash
-./bin/waterctl install
-waterctl project add /absolute/path/to/project --name my-project
-waterctl doctor
+git clone https://github.com/Jinchengawu/AI-Work-Watcher.git
+cd AI-Work-Watcher
+python3 -m pip install -e .
+ai-work-watcher install
+ai-work-watcher doctor
 ```
 
-The installer links the canonical Skill into Codex and Claude Code, merges Water-owned `SessionEnd` hooks, adds marked bootstrap instructions, and schedules a review for Monday 09:00 Asia/Shanghai. It backs up changed configuration files and preserves all non-Water entries. Codex asks you to review and trust newly installed hooks through `/hooks` before their first execution.
+`install` adds user-level Skill links, bootstrap instructions, and SessionEnd hooks. It does not install a weekly scheduler or start background model calls. `doctor` reports Codex and Claude Code separately; an unavailable host is shown as skipped.
 
-Use `--no-schedule` if you only want the Skill and hooks:
+## First success
+
+Registering is explicit. A parent or unrelated repository is not monitored automatically.
 
 ```bash
-./bin/waterctl install --no-schedule
+cd /path/to/your-project
+ai-work-watcher project add . --name my-project
 ```
 
-Record a structured session summary:
+Then start Codex CLI or Claude Code in that project and ask:
 
-```bash
-waterctl record --stdin <<'JSON'
-{
-  "source_terminal": "codex",
-  "raw_session_id": "local-session-id",
-  "goal": "Verify the import workflow",
-  "actions": ["Ran the focused test suite"],
-  "outcome": "The workflow passed its acceptance tests",
-  "status": "completed",
-  "evidence": [{"kind": "test", "summary": "12 tests passed"}],
-  "blockers": [],
-  "risks": [],
-  "metrics": {"test_count": 12},
-  "tags": ["verification"],
-  "confidence": 0.9
-}
-JSON
+```text
+Use $ai-work-watcher to prepare this task:
+Add CSV export. Keep the existing JSON format unchanged.
 ```
 
-Run or inspect the weekly loop:
+The Skill will inspect project guidance and test entry points, identify missing acceptance criteria, and show a Task Brief plus refined Prompt. Nothing is recorded and no project file is changed until you approve the brief. After execution, ask it to finish the task; the deterministic CLI stores the compact record privately.
 
-```bash
-waterctl review weekly --provider auto
-waterctl recommend accept rec-example
-waterctl recommend verify rec-example --result pass
-```
+## The coaching model
 
-## Data and privacy
+Each Finish diagnosis contains `score: 1–5 | null`, a mapped state, confidence, evidence IDs, diagnosis, and next step.
 
-Personal evidence stays under `~/.water/`; it is never written to a supervised repository. Before storage, Water hashes provider session IDs, rejects unknown or transcript-shaped fields, limits text sizes, and redacts credentials, private keys, email addresses, and high-entropy tokens.
+| Dimension | Question |
+| --- | --- |
+| `task_definition` | Were the goal, constraints, and acceptance criteria clear? |
+| `context_structure` | Did the Prompt match the repository structure, instructions, and current state? |
+| `prompt_effectiveness` | Did the Prompt reduce ambiguity and move execution forward? |
+| `execution_verification` | Were the workflow, order of operations, and checks complete? |
+| `result_adjusted_efficiency` | After outcome and quality, were rework, time, turns, tokens, and cost reasonable? |
 
-The default retention period for session details is 180 days. Weekly reviews and explicitly approved guidance remain until removed. See the [event schema](schemas/water-event-v1.schema.json) and [protocol](.agents/skills/water-supervisor/references/protocol.md) for the exact contract.
+Scores map to `needs_attention`, `unstable`, `developing`, `healthy`, and `repeatable`; insufficient evidence is `unknown`. A failed or low-quality task cannot earn a favorable efficiency diagnosis merely by being cheap.
 
 ## Commands
 
-| Command | Purpose |
-| --- | --- |
-| `waterctl project add\|remove\|list` | Manage the explicit supervision registry |
-| `waterctl record --stdin` | Validate, redact, and append a session summary |
-| `waterctl review weekly` | Generate a weekly evidence-backed report |
-| `waterctl recommend accept\|reject\|verify` | Manage the improvement lifecycle |
-| `waterctl prune` | Enforce event retention |
-| `waterctl install\|uninstall\|doctor` | Manage and diagnose terminal integrations |
+```text
+ai-work-watcher install | uninstall | doctor
+ai-work-watcher project add | remove | list | inspect
+ai-work-watcher task prepare | finish --stdin
+ai-work-watcher prompt list | show | promote | archive
+ai-work-watcher trends generate --stdin
+ai-work-watcher proposal accept | reject | verify
+ai-work-watcher migrate legacy-v0
+ai-work-watcher prune
+```
+
+The Agent Skill is the intended interface for Prepare, Finish, and trend reasoning. The CLI validates and stores already-approved structured input; it is not a background analyst.
+
+## Data and approval boundaries
+
+Private data lives under `~/.ai-work-watcher/`: configuration, approved Task Briefs and Prompts, compact task outcomes, structure snapshots, observations, proposals, trend reports, and migration archives. Shareable, approved assets live in the project:
+
+```text
+.ai-work-watcher/
+├── project.md
+├── prompts/
+│   ├── index.json
+│   └── <name>-r<N>.md
+└── workflows/
+    ├── index.json
+    └── <name>-r<N>.md
+```
+
+The Alpha does not store full model replies, transcripts, source code, diffs, patches, terminal output, or secrets. Project-level changes require a concrete proposal and explicit approval. Source-directory reorganization is outside the coaching flow; AI-Work-Watcher can only propose a separate implementation plan.
+
+See [the protocol](docs/protocol.md), [evaluation scope](docs/evaluation.md), and [security policy](SECURITY.md).
+
+## Current limits
+
+- Individual developers only; no team permissions, employee evaluation, or management dashboard.
+- Codex CLI and Claude Code only; other agent hosts are not yet supported.
+- No Web UI, hosted service, release automation, or default background analysis.
+- Trend quality depends on at least three completed tasks and honest structured evidence.
+- Alpha migration preserves old data as an archive but does not convert legacy scoring.
 
 ## Development
 
-The runtime uses only the Python standard library.
-
 ```bash
 python3 -m unittest discover -s tests -v
-python3 .agents/skills/water-supervisor/scripts/validate_skill.py \
-  .agents/skills/water-supervisor
+python3 .agents/skills/ai-work-watcher/scripts/validate_skill.py .agents/skills/ai-work-watcher
+git diff --check
 ```
 
-`waterctl uninstall` preserves personal data by default. Use `waterctl uninstall --purge-data` only when permanent deletion is intended.
-
-## Current boundaries
-
-- v0.1 supports macOS, Codex, and Claude Code.
-- There is no web dashboard, cloud sync, team account, database, or full transcript collection.
-- Weekly review quality depends on the evidence available and the selected model; low-volume weeks should produce low-confidence findings.
-
-See the [closed-loop evaluation](docs/closed-loop-evaluation.md) for the real Codex/Claude test setup, observed effects, defects found, and remaining limits.
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+Contributions are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md). Licensed under the [MIT License](LICENSE).

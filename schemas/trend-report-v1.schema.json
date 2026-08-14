@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"TrendReport v1","type":"object","required":["id","project_id","completed_task_count","patterns"],"not":{"required":["overall_score"]}}
