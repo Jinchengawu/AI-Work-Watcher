@@ -26,7 +26,7 @@ Recommendation → human decision → experiment → verified guidance
 ## Requirements
 
 - macOS (the v0.1 scheduler uses LaunchAgents)
-- Python 3.11 or newer
+- Python 3.9 or newer
 - Codex CLI and/or Claude Code
 - `launchctl` for the weekly schedule
 
@@ -109,6 +109,8 @@ python3 .agents/skills/water-supervisor/scripts/validate_skill.py \
 - v0.1 supports macOS, Codex, and Claude Code.
 - There is no web dashboard, cloud sync, team account, database, or full transcript collection.
 - Weekly review quality depends on the evidence available and the selected model; low-volume weeks should produce low-confidence findings.
+
+See the [closed-loop evaluation](docs/closed-loop-evaluation.md) for the real Codex/Claude test setup, observed effects, defects found, and remaining limits.
 
 ## License
 

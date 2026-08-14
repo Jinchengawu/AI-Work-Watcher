@@ -13,7 +13,7 @@ from waterctl.hooks import record_hook
 from waterctl.install import MARKER_START, doctor, install, uninstall
 from waterctl.paths import guidance_path, recommendations_path, water_home
 from waterctl.projects import add_project, resolve_project
-from waterctl.review import DIMENSIONS, ReviewError, run_weekly
+from waterctl.review import DIMENSIONS, ReviewError, _run_claude, run_weekly, validate_review
 from waterctl.schema import ValidationError, normalize_event
 from waterctl.store import append_event, event_path, prune_events, recommendation_states
 from waterctl.cli import _transition_recommendation
@@ -265,6 +265,32 @@ class ReviewAndRecommendationTests(WaterTestCase):
             run_weekly("auto", "2026-W33")
         codex_run.assert_called_once()
         claude_run.assert_called_once()
+
+    def test_claude_accepts_strict_json_result_when_structured_output_is_absent(self) -> None:
+        candidate = self.review_result("evt-test")
+        candidate["cross_project_patterns"] = [{"pattern": "Evidence stayed isolated by project."}]
+        candidate["recommendations"][0]["impact"] = "critical"
+        candidate["recommendations"][0]["effort"] = "small"
+        envelope = json.dumps({"type": "result", "result": json.dumps(candidate), "structured_output": None})
+        process_result = type("Result", (), {"returncode": 0, "stdout": envelope, "stderr": ""})()
+        schema = Path(__file__).resolve().parents[1] / "schemas" / "review-v1.schema.json"
+        with patch("waterctl.review.shutil.which", return_value="/usr/bin/claude"), \
+             patch("waterctl.review.subprocess.run", return_value=process_result):
+            normalized = _run_claude("prompt", schema)
+        self.assertEqual(normalized["cross_project_patterns"], ["Evidence stayed isolated by project."])
+        self.assertEqual(normalized["recommendations"][0]["impact"], "high")
+        self.assertEqual(normalized["recommendations"][0]["effort"], "low")
+        validate_review(normalized)
+
+    def test_fallback_review_rejects_extra_fields_and_invalid_enums(self) -> None:
+        for mutation in ("extra", "enum"):
+            candidate = self.review_result("evt-test")
+            if mutation == "extra":
+                candidate["unexpected"] = True
+            else:
+                candidate["recommendations"][0]["impact"] = "critical"
+            with self.subTest(mutation=mutation), self.assertRaises(ReviewError):
+                validate_review(candidate)
 
 
 if __name__ == "__main__":
