@@ -1,0 +1,4 @@
+interface:
+  display_name: "Water Supervisor"
+  short_description: "Supervise cross-terminal development workflows"
+  default_prompt: "Use $water-supervisor to record this development session or review recent workflow evidence."

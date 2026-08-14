@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "water-supervisor"
+version = "0.1.0"
+description = "Local-first, model-neutral workflow supervision for Codex and Claude Code"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+dependencies = []
+authors = [{ name = "Jinchengawu" }]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: MacOS",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Software Development :: Quality Assurance"
+]
+
+[project.urls]
+Homepage = "https://github.com/Jinchengawu/AI-Work-Watcher"
+Issues = "https://github.com/Jinchengawu/AI-Work-Watcher/issues"
+
+[project.scripts]
+waterctl = "waterctl.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["waterctl*"]

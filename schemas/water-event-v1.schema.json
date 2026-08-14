@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WaterEvent v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "event_id", "timestamp", "project_id", "source_terminal", "model", "source_version", "session_id", "event_type", "goal", "actions", "outcome", "status", "evidence", "blockers", "risks", "metrics", "tags", "confidence", "redaction_summary"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "event_id": {"type": "string", "maxLength": 80},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "project_id": {"type": "string", "maxLength": 80},
+    "source_terminal": {"type": "string", "maxLength": 40},
+    "model": {"type": "string", "maxLength": 100},
+    "source_version": {"type": "string", "maxLength": 100},
+    "session_id": {"type": "string", "maxLength": 80},
+    "event_type": {"enum": ["session_summary", "session_closed"]},
+    "goal": {"type": "string", "maxLength": 2000},
+    "actions": {"type": "array", "maxItems": 20, "items": {"type": "string", "maxLength": 500}},
+    "outcome": {"type": "string", "maxLength": 2000},
+    "status": {"enum": ["completed", "partial", "blocked", "failed", "abandoned", "unknown"]},
+    "evidence": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "oneOf": [
+          {"type": "string", "maxLength": 500},
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "minProperties": 1,
+            "properties": {
+              "kind": {"type": "string", "maxLength": 500},
+              "ref": {"type": "string", "maxLength": 500},
+              "summary": {"type": "string", "maxLength": 500}
+            }
+          }
+        ]
+      }
+    },
+    "blockers": {"type": "array", "maxItems": 20, "items": {"type": "string", "maxLength": 500}},
+    "risks": {"type": "array", "maxItems": 20, "items": {"type": "string", "maxLength": 500}},
+    "metrics": {
+      "type": "object",
+      "maxProperties": 30,
+      "additionalProperties": {"type": ["number", "boolean", "null"]}
+    },
+    "tags": {"type": "array", "maxItems": 20, "items": {"type": "string", "maxLength": 500}},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "redaction_summary": {"type": "object"}
+  }
+}

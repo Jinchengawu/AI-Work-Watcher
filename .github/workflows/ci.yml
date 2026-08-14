@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install editable package
+        run: python -m pip install -e .
+      - name: Compile
+        run: python -m compileall -q waterctl .agents/skills/water-supervisor/scripts
+      - name: Test
+        run: python -m unittest discover -s tests -v
+      - name: Validate skill
+        run: |
+          python .agents/skills/water-supervisor/scripts/validate_skill.py \
+            .agents/skills/water-supervisor
