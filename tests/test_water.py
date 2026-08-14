@@ -167,11 +167,12 @@ class HookAndInstallTests(WaterTestCase):
             first_settings = claude_settings.read_text(encoding="utf-8")
             first_backups = list(claude_settings.parent.glob("settings.json.water-backup-*"))
             install()
+            doctor_checks = doctor()
         self.assertEqual(claude_settings.read_text(encoding="utf-8"), first_settings)
         self.assertEqual(len(list(claude_settings.parent.glob("settings.json.water-backup-*"))), len(first_backups))
         self.assertEqual(json.loads(first_settings)["theme"], "dark")
         self.assertIn(MARKER_START, (self.home / ".codex" / "AGENTS.md").read_text(encoding="utf-8"))
-        self.assertTrue(all(passed for passed, _ in doctor()))
+        self.assertTrue(all(passed for passed, _ in doctor_checks))
         with patch("waterctl.install.shutil.which", side_effect=fake_which), \
              patch("waterctl.install.subprocess.run", return_value=launch_result):
             uninstall()
